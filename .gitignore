@@ -28,5 +28,5 @@ go.work.sum
 .vscode/
 .zed/
 
-# Local file
+# Local files
 info.md

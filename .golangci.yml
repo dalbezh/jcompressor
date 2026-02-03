@@ -1,3 +1,17 @@
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  govet:
+    enable-all: true
+
+  gofmt:
+    simplify: true
+
+  misspell:
+    locale: US
+
 run:
   timeout: 5m
   modules-download-mode: readonly
@@ -16,20 +30,6 @@ linters:
     - gosec
     - bodyclose
     - nilerr
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-
-  govet:
-    enable-all: true
-
-  gofmt:
-    simplify: true
-
-  misspell:
-    locale: US
 
 issues:
   exclude-use-default: false
