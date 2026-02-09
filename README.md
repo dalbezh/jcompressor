@@ -2,6 +2,8 @@
 
 Простое CLI-приложение для сжатия JPEG изображений.
 
+[![Lint](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml/badge.svg)](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml)
+
 ## Установка
 
 ```bash
