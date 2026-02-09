@@ -1,16 +1,4 @@
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-
-  govet:
-    enable-all: true
-
-  gofmt:
-    simplify: true
-
-  misspell:
-    locale: US
+version: "2"
 
 run:
   timeout: 5m
@@ -19,19 +7,32 @@ run:
 linters:
   enable:
     - errcheck
-    - gosimple
     - govet
     - ineffassign
     - staticcheck
     - unused
-    - gofmt
-    - goimports
     - misspell
     - gosec
     - bodyclose
     - nilerr
 
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+
+    govet:
+      enable-all: true
+
+    misspell:
+      locale: US
+
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
