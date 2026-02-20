@@ -5,21 +5,49 @@
 [![Lint](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml/badge.svg)](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml)
 
 ## Установка
+## Используя `make`
 
-```bash
-go build -o jcompressor ./cmd/jcompressor
+Показать окружение сборки:
+```sh
+make env
 ```
 
-## Использование
-
-```bash
-# Сжать изображение (результат будет сохранён как input_compressed.jpg)
-./jcompressor input.jpg
-
-# Сжать изображение с указанием выходного файла
-./jcompressor input.jpg output.jpg
+Построить бинарник:
+```sh
+make build
+# В результате появится ./build/jcompressor
 ```
 
-## Параметры
+Установить (по умолчанию в /usr/local/bin):
+```sh
+make install
+# если нужно sudo — Makefile сам использует sudo при необходимости
+```
 
-По умолчанию изображения сжимаются с качеством **50** (из 100).
+Установить в кастомный префикс (пример для локальной установки в /opt):
+```sh
+make install PREFIX=/opt
+```
+
+Удалить установленный бинарник:
+```sh
+make uninstall
+```
+
+Полная очистка артефактов сборки:
+```sh
+make clean
+```
+
+## Используя `go`
+
+```sh
+go build -o ./build/jcompressor ./cmd/jcompressor
+```
+
+## Параметры запуска
+
+Запустить собранный бинарник:
+```sh
+jcompressor --help
+```

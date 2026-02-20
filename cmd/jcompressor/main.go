@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -8,25 +9,19 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s <input.jpg> [output.jpg]\n", os.Args[0])
+	cliParams, err := ParseCLI(os.Args[1:])
+	if err != nil {
+		if errors.Is(err, ErrHelpRequested) {
+			os.Exit(0)
+		}
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	inputPath := os.Args[1]
-	outputPath := ""
-
-	if len(os.Args) >= 3 {
-		outputPath = os.Args[2]
-	} else {
-		// Если выходной файл не указан, создаём имя с суффиксом _compressed
-		outputPath = compressor.GenerateOutputPath(inputPath)
-	}
-
-	if err := compressor.CompressJPEG(inputPath, outputPath, 50); err != nil {
+	if err := compressor.CompressJPEG(cliParams.InputPath, cliParams.OutputPath, cliParams.Quality); err != nil {
 		fmt.Fprintf(os.Stderr, "Error compressing image: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Successfully compressed %s -> %s (quality: 50)\n", inputPath, outputPath)
+	fmt.Printf("Successfully compressed %s -> %s (quality: %d)\n", cliParams.InputPath, cliParams.OutputPath, cliParams.Quality)
 }
