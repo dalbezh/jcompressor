@@ -3,6 +3,7 @@
 Простое CLI-приложение для сжатия JPEG изображений.
 
 [![Lint](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml/badge.svg)](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/dalbezh/jcompressor/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/dalbezh/jcompressor/?branch=main)
 
 ## Установка
 ## Используя `make`
