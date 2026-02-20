@@ -9,19 +9,17 @@ import (
 	"strings"
 )
 
-// closeFile закрывает файл и сохраняет ошибку, если она возникла.
 func closeFile(f *os.File, err *error) {
 	if cerr := f.Close(); cerr != nil && *err == nil {
 		*err = fmt.Errorf("failed to close file: %w", cerr)
 	}
 }
 
-// Compressor сжимает JPEG изображения с заданным качеством.
 type Compressor struct {
 	quality int
 }
 
-// New создаёт Compressor. Качество ограничивается диапазоном 1-100.
+// Создаёт Compressor. Качество ограничивается диапазоном 1-100.
 func New(quality int) *Compressor {
 	if quality < 1 {
 		quality = 1
@@ -71,7 +69,7 @@ func (c *Compressor) CompressFile(inputPath, outputPath string) (err error) {
 	return nil
 }
 
-// Compress сжимает image.Image и возвращает байты.
+// Compress image.Image and return bytes.
 func (c *Compressor) Compress(img image.Image) ([]byte, error) {
 	options := &jpeg.Options{Quality: c.quality}
 
@@ -114,12 +112,11 @@ func (c *Compressor) generateOutputPath(inputPath string) string {
 	return fmt.Sprintf("%s_compressed%s", base, ext)
 }
 
-// Quality возвращает текущее качество сжатия.
 func (c *Compressor) Quality() int {
 	return c.quality
 }
 
-// CompressJPEG — удобная обёртка для сжатия файла.
+// Обёртка для сжатия файла.
 func CompressJPEG(inputPath, outputPath string, quality int) error {
 	c := New(quality)
 	return c.CompressFile(inputPath, outputPath)

@@ -1,3 +1,8 @@
+# Version 0.1.1
+
+- **[add]** Добавлена MIT License;
+- **[format]** Поправлены docstrings.
+
 # Version 0.1.0
 
 - **[add]** Разработан основной функционал;
