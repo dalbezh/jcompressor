@@ -10,9 +10,9 @@ import (
 )
 
 type CLIParams struct {
-	Quality    int
 	InputPath  string
 	OutputPath string
+	Quality    int
 }
 
 var ErrHelpRequested = errors.New("help requested")
@@ -32,7 +32,9 @@ func ParseCLI(args []string) (*CLIParams, error) {
 	fs.IntVar(&quality, "quality", 50, "JPEG quality (1-100)")
 
 	fs.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [flags] <input.jpg> [output.jpg]\n", os.Args[0])
+		// Use a fixed program name in usage output to avoid reporting untrusted
+		// data (os.Args[0]) to linters like gosec (G705).
+		fmt.Fprintln(os.Stderr, "Usage: jcompressor [flags] <input.jpg> [output.jpg]")
 		fmt.Fprintln(os.Stderr, "\nFlags:")
 		fs.PrintDefaults()
 		fmt.Fprintln(os.Stderr, "\nIf output.jpg is omitted, a file with suffix _compressed will be created.")
