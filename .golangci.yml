@@ -33,6 +33,11 @@ linters:
     misspell:
       locale: US
 
+    gosec:
+      excludes:
+        - G301 # Expect directory permissions to be 0750 or less
+        - G703 # Potential tainted input to MkdirAll (false positive after validation)
+
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0

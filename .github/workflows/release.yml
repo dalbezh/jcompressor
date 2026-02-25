@@ -15,6 +15,58 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate tag format and branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          TAG="${GITHUB_REF#refs/tags/}"
+          COMMIT_SHA="$(git rev-parse "${GITHUB_REF}")"
+
+          echo "Tag: ${TAG}"
+          echo "Commit: ${COMMIT_SHA}"
+
+          # Проверка 1: Формат тега должен быть v0.0.0 (semantic versioning)
+          if ! echo "${TAG}" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "❌ ERROR: Tag '${TAG}' does not match required format 'vX.Y.Z'"
+            echo "   Examples: v1.0.0, v0.2.1, v1.2.3"
+            echo "::error::Invalid tag format. Expected vX.Y.Z (e.g., v1.0.0)"
+            exit 1
+          fi
+          echo "Tag format is valid (semantic versioning)"
+
+          # Проверка 2: Тег должен указывать на коммит из ветки main
+          git fetch origin main
+
+          if git merge-base --is-ancestor "${COMMIT_SHA}" origin/main; then
+            echo "✅ Tag points to a commit in origin/main branch"
+          else
+            echo "❌ ERROR: Tag '${TAG}' does NOT point to a commit in origin/main"
+            echo "   Tags can only be created from the main branch!"
+
+            # Удаление невалидного тега
+            echo "Deleting invalid tag..."
+            API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs/tags/${TAG}"
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "${API_URL}")
+
+            if [ "${HTTP_STATUS}" -ge 200 ] && [ "${HTTP_STATUS}" -lt 300 ]; then
+              echo "::error::Tag '${TAG}' was deleted (not from main branch). HTTP ${HTTP_STATUS}"
+            else
+              echo "::error::Failed to delete tag '${TAG}'. HTTP ${HTTP_STATUS}. Please remove manually."
+            fi
+
+            exit 1
+          fi
+
+          echo "All validation checks passed!"
+          echo "Proceeding with release..."
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -52,6 +104,9 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name }}
           files: |
             dist/*
           generate_release_notes: true
+          draft: false
+          prerelease: false
