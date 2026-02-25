@@ -3,7 +3,9 @@
 Простое CLI-приложение для сжатия JPEG изображений.
 
 [![Lint](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml/badge.svg)](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml)
+[![Tests](https://github.com/dalbezh/jcompressor/actions/workflows/test.yml/badge.svg)](https://github.com/dalbezh/jcompressor/actions/workflows/test.yml)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/dalbezh/jcompressor/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/dalbezh/jcompressor/?branch=main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dalbezh/jcompressor)](https://goreportcard.com/report/github.com/dalbezh/jcompressor)
 
 ## Установка
 
@@ -100,3 +102,8 @@ If output_dir is omitted, files will be saved to ./compressed
 Note: WebP support requires CGO and libwebp library.
 Pre-built releases are compiled without WebP support for easier distribution.
 ```
+
+## Дополнительная документация
+
+- **[CHANGELOG.md](CHANGELOG.md)** - История изменений
+- **[docs/](docs/)** - План по сборке CGO бинарников (для будущего)
