@@ -24,6 +24,20 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      # Exclude some linters from running on tests files
+      - path: _test\.go
+        linters:
+          - errcheck # Allow ignoring errors in tests for brevity
+          - gosec # Allow test code patterns
+          - govet # Relax field alignment in test structs
+
+      # Exclude example files from strict checking
+      - path: example_test\.go
+        linters:
+          - errcheck
+          - gosec
+
   settings:
     errcheck:
       check-type-assertions: true
@@ -39,22 +53,7 @@ linters:
       excludes:
         - G301 # Expect directory permissions to be 0750 or less
         - G306 # Expect file permissions to be 0600 or less
-        - G703 # Potential tainted input to MkdirAll (false positive after validation)
 
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-
-  exclude-rules:
-    # Exclude some linters from running on tests files
-    - path: _test\.go
-      linters:
-        - errcheck # Allow ignoring errors in tests for brevity
-        - gosec # Allow test code patterns
-        - govet # Relax field alignment in test structs
-
-    # Exclude example files from strict checking
-    - path: example_test\.go
-      linters:
-        - errcheck
-        - gosec
