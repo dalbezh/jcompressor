@@ -20,14 +20,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Валидация и очистка пути для предотвращения path traversal
+	outputDir := filepath.Clean(cliParams.OutputDir)
+	absOutputDir, err := filepath.Abs(outputDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error resolving output directory path: %v\n", err)
+		os.Exit(1)
+	}
+
 	// Создаем output directory если не существует
-	if err := os.MkdirAll(cliParams.OutputDir, 0755); err != nil {
+	// #nosec G301 -- directory permissions 0755 are intentional
+	if err := os.MkdirAll(absOutputDir, 0755); err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating output directory: %v\n", err)
 		os.Exit(1)
 	}
 
 	inputFileName := filepath.Base(cliParams.InputPath)
-	jpegOutputPath := filepath.Join(cliParams.OutputDir, inputFileName)
+	jpegOutputPath := filepath.Join(absOutputDir, inputFileName)
 
 	// Сжимаем JPEG
 	if err := compressor.CompressJPEG(cliParams.InputPath, jpegOutputPath, cliParams.Quality); err != nil {
@@ -42,7 +51,7 @@ func main() {
 		// Формируем путь к WebP файлу (заменяем расширение на .webp)
 		ext := filepath.Ext(inputFileName)
 		webpFileName := strings.TrimSuffix(inputFileName, ext) + ".webp"
-		webpOutputPath := filepath.Join(cliParams.OutputDir, webpFileName)
+		webpOutputPath := filepath.Join(absOutputDir, webpFileName)
 
 		if err := compressor.CompressToWebP(cliParams.InputPath, webpOutputPath, cliParams.Quality); err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating WebP: %v\n", err)
