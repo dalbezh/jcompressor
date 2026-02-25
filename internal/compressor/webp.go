@@ -1,30 +1,35 @@
 package compressor
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"os"
 	"path/filepath"
 
-	"github.com/chai2010/webp"
+	"github.com/kolesa-team/go-webp/encoder"
+	"github.com/kolesa-team/go-webp/webp"
 )
 
 // ConvertToWebP converts an image to WebP format with the specified quality
 func ConvertToWebP(img image.Image, outputPath string, quality int) (err error) {
 	outputPath = filepath.Clean(outputPath)
 
-	outputFile, err := os.Create(outputPath) // #nosec G304
+	// Encode image to WebP
+	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, float32(quality))
 	if err != nil {
-		return fmt.Errorf("failed to create webp output file: %w", err)
+		return fmt.Errorf("failed to create webp encoder options: %w", err)
 	}
-	defer closeFile(outputFile, &err)
 
-	// Convert quality (1-100) to WebP quality
-	if err := webp.Encode(outputFile, img, &webp.Options{
-		Lossless: false,
-		Quality:  float32(quality),
-	}); err != nil {
+	var buf bytes.Buffer
+	if err := webp.Encode(&buf, img, options); err != nil {
 		return fmt.Errorf("failed to encode WebP image: %w", err)
+	}
+
+	// Write to file
+	// #nosec G306 -- file permissions 0644 are intentional
+	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
+		return fmt.Errorf("failed to write webp output file: %w", err)
 	}
 
 	return nil
