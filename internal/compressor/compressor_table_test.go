@@ -176,7 +176,7 @@ func TestCompressor_CompressionRatios(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			outputPath := filepath.Join(tmpDir, "output_q"+string(rune(tt.quality))+".jpg")
+			outputPath := filepath.Join(tmpDir, fmt.Sprintf("output_q%d.jpg", tt.quality))
 
 			c := New(tt.quality)
 			if err := c.CompressFile(inputPath, outputPath); err != nil {
