@@ -2,7 +2,7 @@
 **/*_string.go
 
 # Test helpers
-**/**/testutil/testutil.go
+**/testutil/**
 
 # Build tags (WebP CGO version не тестируется в no-CGO режиме)
 **/webp.go
