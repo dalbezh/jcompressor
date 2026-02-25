@@ -52,3 +52,21 @@ go build -o ./build/jcompressor ./cmd/jcompressor
 ```sh
 jcompressor --help
 ```
+
+```
+Usage: jcompressor [flags] <input.jpg> [output_dir]
+
+Flags:
+  -h	show help
+  -help
+    	show help
+  -q int
+    	JPEG quality (1-100) (default 50)
+  -quality int
+    	JPEG quality (1-100) (default 50)
+  -w	also create WebP version
+  -webp
+    	also create WebP version
+
+If output_dir is omitted, files will be saved to ./compressed
+```

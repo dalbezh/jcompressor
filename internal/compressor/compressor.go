@@ -30,7 +30,7 @@ func New(quality int) *Compressor {
 	return &Compressor{quality: quality}
 }
 
-// CompressFile сжимает JPEG файл. Если outputPath пустой — добавляет суффикс "_compressed".
+// CompressFile сжимает JPEG файл.
 func (c *Compressor) CompressFile(inputPath, outputPath string) (err error) {
 	ext := strings.ToLower(filepath.Ext(inputPath))
 	if ext != ".jpg" && ext != ".jpeg" {
@@ -50,9 +50,6 @@ func (c *Compressor) CompressFile(inputPath, outputPath string) (err error) {
 		return fmt.Errorf("failed to decode JPEG image: %w", err)
 	}
 
-	if outputPath == "" {
-		outputPath = c.generateOutputPath(inputPath)
-	}
 	outputPath = filepath.Clean(outputPath)
 
 	outputFile, err := os.Create(outputPath) // #nosec G304
@@ -106,12 +103,6 @@ func (c *Compressor) Compress(img image.Image) ([]byte, error) {
 	return data, nil
 }
 
-func (c *Compressor) generateOutputPath(inputPath string) string {
-	ext := filepath.Ext(inputPath)
-	base := strings.TrimSuffix(inputPath, ext)
-	return fmt.Sprintf("%s_compressed%s", base, ext)
-}
-
 func (c *Compressor) Quality() int {
 	return c.quality
 }
@@ -120,11 +111,4 @@ func (c *Compressor) Quality() int {
 func CompressJPEG(inputPath, outputPath string, quality int) error {
 	c := New(quality)
 	return c.CompressFile(inputPath, outputPath)
-}
-
-// GenerateOutputPath генерирует путь с суффиксом "_compressed".
-func GenerateOutputPath(inputPath string) string {
-	ext := filepath.Ext(inputPath)
-	base := strings.TrimSuffix(inputPath, ext)
-	return fmt.Sprintf("%s_compressed%s", base, ext)
 }
