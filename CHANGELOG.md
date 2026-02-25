@@ -1,3 +1,13 @@
+# Version 0.2.1
+
+- **[add]** Unit тесты для всех компонентов (CLI, compressor, WebP);
+- **[add]** Table-driven тесты для параметризованных сценариев;
+- **[add]** Integration тесты (e2e);
+- **[add]** Benchmarks для измерения производительности;
+- **[add]** Test helpers и утилиты (internal/testutil);
+- **[add]** GitHub Actions workflow для тестов;
+- **[format]** Добавлены test badges в README;
+
 # Version 0.2.0
 
 - **[add]** Добавлена поддержка сжатия и конвертации в webp;

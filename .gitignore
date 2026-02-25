@@ -12,6 +12,7 @@
 coverage.*
 *.coverprofile
 profile.cov
+coverage.html
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
@@ -30,3 +31,8 @@ go.work.sum
 
 # Local files
 info.md
+docs/
+
+# Build artifacts
+dist/
+build/jcompressor

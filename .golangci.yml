@@ -44,3 +44,17 @@ linters:
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
+
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - errcheck # Allow ignoring errors in tests for brevity
+        - gosec # Allow test code patterns
+        - govet # Relax field alignment in test structs
+
+    # Exclude example files from strict checking
+    - path: example_test\.go
+      linters:
+        - errcheck
+        - gosec

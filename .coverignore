@@ -1,0 +1,8 @@
+# Generated files
+**/*_string.go
+
+# Test helpers
+**/testutil/**
+
+# Build tags (WebP CGO version не тестируется в no-CGO режиме)
+**/webp.go
