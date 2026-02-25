@@ -71,15 +71,20 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: "1.23"
           cache: true
 
       - name: Run tests
-        run: go test ./...
+        run: |
+          # Тесты без CGO (как будут собраны релизные бинарники)
+          CGO_ENABLED=0 go test ./...
 
       - name: Build binaries
         run: |
           mkdir -p dist
+
+          # Сборка без CGO для кросс-компиляции (WebP будет недоступен)
+          export CGO_ENABLED=0
 
           # Linux amd64
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/jcompressor-linux-amd64 ./cmd/jcompressor

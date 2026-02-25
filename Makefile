@@ -24,10 +24,18 @@ env:
 
 # Собрать бинарник в $(BUILD_DIR)
 build:
-	@echo "Building $(BINARY_NAME) for $(GOOS)/$(GOARCH)..."
+	@echo "Building $(BINARY_NAME) for $(GOOS)/$(GOARCH) (without CGO)..."
 	@mkdir -p $(BUILD_DIR)
-	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $(BUILD_DIR)/$(BINARY_NAME) $(CMD_PATH)
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $(BUILD_DIR)/$(BINARY_NAME) $(CMD_PATH)
 	@echo "Built: $(BUILD_DIR)/$(BINARY_NAME)"
+	@echo "Note: WebP support disabled (CGO_ENABLED=0). To enable, use 'make build-webp'."
+
+# Собрать бинарник с поддержкой WebP (требует CGO и libwebp)
+build-webp:
+	@echo "Building $(BINARY_NAME) for $(GOOS)/$(GOARCH) with WebP support (CGO enabled)..."
+	@mkdir -p $(BUILD_DIR)
+	CGO_ENABLED=1 GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $(BUILD_DIR)/$(BINARY_NAME) $(CMD_PATH)
+	@echo "Built: $(BUILD_DIR)/$(BINARY_NAME) (with WebP support)"
 
 # Install the built binary to $(INSTALL_DIR). Uses sudo if necessary.
 install: build
@@ -67,7 +75,8 @@ help:
 	@echo "Targets:"
 	@echo "  all (default)   - same as 'build'"
 	@echo "  env             - print Go build environment and module info"
-	@echo "  build           - build the binary into $(BUILD_DIR)"
+	@echo "  build           - build the binary into $(BUILD_DIR) (without WebP)"
+	@echo "  build-webp      - build with WebP support (requires CGO and libwebp)"
 	@echo "  install         - install the binary into \\$(INSTALL_DIR) (uses sudo if needed)"
 	@echo "                   Override PREFIX to change location, e.g. 'make install PREFIX=/usr'"
 	@echo "  uninstall       - remove the installed binary from \\$(INSTALL_DIR)"

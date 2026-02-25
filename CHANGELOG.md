@@ -1,6 +1,10 @@
 # Version 0.2.0
 
 - **[add]** Добавлена поддержка сжатия и конвертации в webp;
+- **[change]** WebP поддержка опциональная (требует CGO + libwebp);
+- **[add]** Добавлены build tags для условной компиляции WebP;
+- **[add]** Добавлена цель `build-webp` в Makefile;
+- **[security]** Исправлены предупреждения gosec (path traversal).
 - **[change]** Обновлен CI;
 - **[format]** Поправлена документация.
 

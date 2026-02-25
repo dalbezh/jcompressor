@@ -30,7 +30,7 @@ func main() {
 
 	// Создаем output directory если не существует
 	// #nosec G301 G703 -- path is cleaned and validated, permissions are intentional
-	if err := os.MkdirAll(absOutputDir, 0755); err != nil { // #nosec G301
+	if err := os.MkdirAll(absOutputDir, 0755); err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating output directory: %v\n", err)
 		os.Exit(1)
 	}
@@ -54,6 +54,12 @@ func main() {
 		webpOutputPath := filepath.Join(absOutputDir, webpFileName)
 
 		if err := compressor.CompressToWebP(cliParams.InputPath, webpOutputPath, cliParams.Quality); err != nil {
+			// Проверяем, не является ли это ошибкой "WebP не поддерживается"
+			if errors.Is(err, compressor.ErrWebPNotSupported) {
+				fmt.Fprintf(os.Stderr, "Warning: %v\n", err)
+				fmt.Fprintf(os.Stderr, "Note: To enable WebP support, rebuild with CGO_ENABLED=1 and libwebp installed\n")
+				os.Exit(1)
+			}
 			fmt.Fprintf(os.Stderr, "Error creating WebP: %v\n", err)
 			os.Exit(1)
 		}

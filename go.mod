@@ -1,5 +1,5 @@
 module github.com/dalbezh/jcompressor
 
-go 1.24.4
+go 1.23
 
-require github.com/chai2010/webp v1.4.0
+require github.com/kolesa-team/go-webp v1.0.5
