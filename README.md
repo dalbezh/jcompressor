@@ -18,7 +18,7 @@ Ubuntu/Debian:
 apt-get install libwebp-dev
 ```
 Fedora: 
-```
+```sh
 dnf install libwebp-devel
 ```
 

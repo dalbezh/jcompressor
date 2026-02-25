@@ -30,7 +30,7 @@ func main() {
 
 	// Создаем output directory если не существует
 	// #nosec G301 G703 -- path is cleaned and validated, permissions are intentional
-	if err := os.MkdirAll(absOutputDir, 0755); err != nil { // #nosec G301
+	if err := os.MkdirAll(absOutputDir, 0755); err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating output directory: %v\n", err)
 		os.Exit(1)
 	}
