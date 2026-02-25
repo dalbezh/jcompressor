@@ -1,7 +1,10 @@
+//go:build cgo && !nowebp
+
 package compressor
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
 	"os"
@@ -10,6 +13,10 @@ import (
 	"github.com/kolesa-team/go-webp/encoder"
 	"github.com/kolesa-team/go-webp/webp"
 )
+
+// ErrWebPNotSupported is returned when WebP functionality is not available
+// This error is only used in the no-CGO build, but declared here for API consistency
+var ErrWebPNotSupported = errors.New("WebP support is not available in this build (requires CGO and libwebp)")
 
 // ConvertToWebP converts an image to WebP format with the specified quality
 func ConvertToWebP(img image.Image, outputPath string, quality int) (err error) {
