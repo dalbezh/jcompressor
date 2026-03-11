@@ -1,3 +1,9 @@
+# Version 0.3.0
+
+- **[change]** Иправлен Action pipeline для Release;
+- **[change]** Теперь приложение всегда собирается с поддержкой webp;
+- **[format]** Доработан README.
+
 # Version 0.2.1
 
 - **[add]** Unit тесты для всех компонентов (CLI, compressor, WebP);

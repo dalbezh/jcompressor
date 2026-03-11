@@ -10,7 +10,7 @@ GOOS := $(shell $(GO) env GOOS)
 GOARCH := $(shell $(GO) env GOARCH)
 GOVERSION := $(shell $(GO) version)
 
-.PHONY: all build env install uninstall clean help
+.PHONY: all build build-nocgo env install uninstall clean help
 
 all: build
 
@@ -22,20 +22,19 @@ env:
 	@echo "  Module:  $(shell awk '/^module /{print $$2}' go.mod)"
 	@echo "  Binary:  $(BINARY_NAME) (built from $(CMD_PATH))"
 
-# Собрать бинарник в $(BUILD_DIR)
-build:
-	@echo "Building $(BINARY_NAME) for $(GOOS)/$(GOARCH) (without CGO)..."
-	@mkdir -p $(BUILD_DIR)
-	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $(BUILD_DIR)/$(BINARY_NAME) $(CMD_PATH)
-	@echo "Built: $(BUILD_DIR)/$(BINARY_NAME)"
-	@echo "Note: WebP support disabled (CGO_ENABLED=0). To enable, use 'make build-webp'."
-
 # Собрать бинарник с поддержкой WebP (требует CGO и libwebp)
-build-webp:
+build:
 	@echo "Building $(BINARY_NAME) for $(GOOS)/$(GOARCH) with WebP support (CGO enabled)..."
 	@mkdir -p $(BUILD_DIR)
 	CGO_ENABLED=1 GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $(BUILD_DIR)/$(BINARY_NAME) $(CMD_PATH)
 	@echo "Built: $(BUILD_DIR)/$(BINARY_NAME) (with WebP support)"
+
+# Собрать бинарник без WebP (без CGO, статическая сборка)
+build-nocgo:
+	@echo "Building $(BINARY_NAME) for $(GOOS)/$(GOARCH) without WebP (CGO disabled)..."
+	@mkdir -p $(BUILD_DIR)
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o $(BUILD_DIR)/$(BINARY_NAME) $(CMD_PATH)
+	@echo "Built: $(BUILD_DIR)/$(BINARY_NAME) (without WebP)"
 
 # Install the built binary to $(INSTALL_DIR). Uses sudo if necessary.
 install: build
@@ -75,8 +74,8 @@ help:
 	@echo "Targets:"
 	@echo "  all (default)   - same as 'build'"
 	@echo "  env             - print Go build environment and module info"
-	@echo "  build           - build the binary into $(BUILD_DIR) (without WebP)"
-	@echo "  build-webp      - build with WebP support (requires CGO and libwebp)"
+	@echo "  build           - build with WebP support (requires CGO and libwebp)"
+	@echo "  build-nocgo     - build without WebP (CGO disabled, static binary)"
 	@echo "  install         - install the binary into \\$(INSTALL_DIR) (uses sudo if needed)"
 	@echo "                   Override PREFIX to change location, e.g. 'make install PREFIX=/usr'"
 	@echo "  uninstall       - remove the installed binary from \\$(INSTALL_DIR)"

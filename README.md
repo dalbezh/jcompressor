@@ -1,6 +1,6 @@
 # JPEG Compressor
 
-Простое CLI-приложение для сжатия JPEG изображений.
+Простое CLI-приложение для сжатия JPEG изображений с поддержкой конвертации в WebP.
 
 [![Lint](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml/badge.svg)](https://github.com/dalbezh/jcompressor/actions/workflows/lint.yml)
 [![Tests](https://github.com/dalbezh/jcompressor/actions/workflows/test.yml/badge.svg)](https://github.com/dalbezh/jcompressor/actions/workflows/test.yml)
@@ -31,15 +31,15 @@ dnf install libwebp-devel
 make env
 ```
 
-Построить бинарник (без поддержки WebP):
+Построить бинарник с поддержкой WebP (требует CGO и libwebp):
 ```sh
 make build
 # В результате появится ./build/jcompressor
 ```
 
-Построить с поддержкой WebP (требует CGO и libwebp):
+Построить без WebP (статическая сборка, CGO отключён):
 ```sh
-make build-webp
+make build-nocgo
 ```
 
 Установить (по умолчанию в /usr/local/bin):
@@ -100,10 +100,19 @@ Flags:
 If output_dir is omitted, files will be saved to ./compressed
 
 Note: WebP support requires CGO and libwebp library.
-Pre-built releases are compiled without WebP support for easier distribution.
+Pre-built releases include WebP support for all platforms.
 ```
+
+## Поддерживаемые платформы
+
+| ОС | Архитектуры |
+|----|-------------|
+| Linux | amd64, arm64 |
+| macOS | amd64, arm64 (Apple Silicon) |
+| Windows | amd64, arm64 |
+
+Все релизные бинарники собираются с `CGO_ENABLED=1` и включают поддержку WebP.
 
 ## Дополнительная документация
 
-- **[CHANGELOG.md](CHANGELOG.md)** - История изменений
-- **[docs/](docs/)** - План по сборке CGO бинарников (для будущего)
+- **[CHANGELOG.md](CHANGELOG.md)** — История изменений
