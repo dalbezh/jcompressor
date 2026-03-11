@@ -1,25 +1,17 @@
 name: Build
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-permissions:
-  contents: write
+  workflow_call:
 
 jobs:
   build:
     name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
-    needs: validate
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
+          # Linux
           - {
               runner: ubuntu-latest,
               goos: linux,
@@ -32,7 +24,7 @@ jobs:
               goarch: arm64,
               binary: jcompressor-linux-arm64,
             }
-
+          # macOS
           - {
               runner: macos-latest,
               goos: darwin,
@@ -45,7 +37,7 @@ jobs:
               goarch: arm64,
               binary: jcompressor-darwin-arm64,
             }
-
+          # Windows
           - {
               runner: windows-latest,
               goos: windows,
@@ -67,12 +59,14 @@ jobs:
           go-version: "1.23"
           cache: true
 
+      # ── Linux amd64 (native) ──────────────────────────────────────────
       - name: Install libwebp (Linux amd64)
         if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebp-dev
 
+      # ── Linux arm64 (кросс-компиляция с amd64) ────────────────────────
       - name: Install cross-compiler and libwebp (Linux arm64)
         if: matrix.goos == 'linux' && matrix.goarch == 'arm64'
         run: |
@@ -125,6 +119,7 @@ jobs:
           cmake --build . --parallel
           cmake --install .
 
+      # ── Windows amd64 (MSYS2 MinGW) ──────────────────────────────────
       - name: Setup MSYS2 (Windows amd64)
         if: matrix.goos == 'windows' && matrix.goarch == 'amd64'
         uses: msys2/setup-msys2@v2
@@ -137,6 +132,7 @@ jobs:
             mingw-w64-x86_64-libwebp
             mingw-w64-x86_64-pkg-config
 
+      # ── Windows arm64 (кросс-компиляция через llvm-mingw на Linux) ───
       - name: Install llvm-mingw and build libwebp (Windows arm64)
         if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
         run: |
@@ -178,6 +174,7 @@ jobs:
           cmake --build . --parallel
           cmake --install .
 
+      # ── Сборка бинарника ──────────────────────────────────────────────
       - name: Build (Linux / macOS arm64)
         if: (matrix.goos == 'linux') || (matrix.goos == 'darwin' && matrix.goarch == 'arm64')
         env:
