@@ -1,0 +1,234 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    needs: validate
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {
+              runner: ubuntu-latest,
+              goos: linux,
+              goarch: amd64,
+              binary: jcompressor-linux-amd64,
+            }
+          - {
+              runner: ubuntu-latest,
+              goos: linux,
+              goarch: arm64,
+              binary: jcompressor-linux-arm64,
+            }
+
+          - {
+              runner: macos-latest,
+              goos: darwin,
+              goarch: amd64,
+              binary: jcompressor-darwin-amd64,
+            }
+          - {
+              runner: macos-latest,
+              goos: darwin,
+              goarch: arm64,
+              binary: jcompressor-darwin-arm64,
+            }
+
+          - {
+              runner: windows-latest,
+              goos: windows,
+              goarch: amd64,
+              binary: jcompressor-windows-amd64.exe,
+            }
+          - {
+              runner: ubuntu-latest,
+              goos: windows,
+              goarch: arm64,
+              binary: jcompressor-windows-arm64.exe,
+            }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: Install libwebp (Linux amd64)
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebp-dev
+
+      - name: Install cross-compiler and libwebp (Linux arm64)
+        if: matrix.goos == 'linux' && matrix.goarch == 'arm64'
+        run: |
+          sudo dpkg --add-architecture arm64
+
+          CODENAME=$(lsb_release -cs)
+
+          # Ограничиваем существующие источники архитектурой amd64
+          if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+            sudo sed -i '/^Types:/a Architectures: amd64' /etc/apt/sources.list.d/ubuntu.sources
+          fi
+
+          # Добавляем arm64-источники (ports.ubuntu.com)
+          cat <<EOF | sudo tee /etc/apt/sources.list.d/arm64-ports.list
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${CODENAME} main restricted universe multiverse
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${CODENAME}-updates main restricted universe multiverse
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${CODENAME}-security main restricted universe multiverse
+          EOF
+
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu libwebp-dev:arm64
+
+      # ── macOS arm64 (native, brew) ─────────────────────────────────────
+      - name: Install libwebp (macOS arm64)
+        if: matrix.goos == 'darwin' && matrix.goarch == 'arm64'
+        run: brew install webp
+
+      # ── macOS amd64 (кросс-компиляция с arm64, libwebp из исходников) ─
+      - name: Build libwebp for x86_64 (macOS amd64 cross)
+        if: matrix.goos == 'darwin' && matrix.goarch == 'amd64'
+        run: |
+          WEBP_VERSION="1.5.0"
+          curl -sL "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${WEBP_VERSION}.tar.gz" \
+            | tar xz
+          cd "libwebp-${WEBP_VERSION}"
+          mkdir build && cd build
+          cmake .. \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+            -DCMAKE_INSTALL_PREFIX="${HOME}/webp-x86_64" \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DWEBP_BUILD_CWEBP=OFF \
+            -DWEBP_BUILD_DWEBP=OFF \
+            -DWEBP_BUILD_GIF2WEBP=OFF \
+            -DWEBP_BUILD_IMG2WEBP=OFF \
+            -DWEBP_BUILD_VWEBP=OFF \
+            -DWEBP_BUILD_WEBPINFO=OFF \
+            -DWEBP_BUILD_WEBPMUX=OFF \
+            -DWEBP_BUILD_EXTRAS=OFF \
+            -DWEBP_BUILD_ANIM_UTILS=OFF
+          cmake --build . --parallel
+          cmake --install .
+
+      - name: Setup MSYS2 (Windows amd64)
+        if: matrix.goos == 'windows' && matrix.goarch == 'amd64'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          path-type: inherit
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-libwebp
+            mingw-w64-x86_64-pkg-config
+
+      - name: Install llvm-mingw and build libwebp (Windows arm64)
+        if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
+        run: |
+          set -euo pipefail
+
+          # llvm-mingw — кросс-компилятор для Windows arm64
+          LLVM_MINGW_VERSION="20260224"
+          LLVM_MINGW_NAME="llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-22.04-x86_64"
+          curl -sL "https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_VERSION}/${LLVM_MINGW_NAME}.tar.xz" \
+            | tar xJ -C /opt
+          LLVM_MINGW_DIR="/opt/${LLVM_MINGW_NAME}"
+          echo "${LLVM_MINGW_DIR}/bin" >> "$GITHUB_PATH"
+          export PATH="${LLVM_MINGW_DIR}/bin:${PATH}"
+          SYSROOT="${LLVM_MINGW_DIR}/aarch64-w64-mingw32"
+          echo "WIN_ARM64_SYSROOT=${SYSROOT}" >> "$GITHUB_ENV"
+
+          # Сборка libwebp из исходников для Windows arm64
+          sudo apt-get update && sudo apt-get install -y cmake
+          WEBP_VERSION="1.5.0"
+          curl -sL "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${WEBP_VERSION}.tar.gz" \
+            | tar xz
+          cd "libwebp-${WEBP_VERSION}"
+          mkdir build && cd build
+          cmake .. \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+            -DCMAKE_C_COMPILER=aarch64-w64-mingw32-gcc \
+            -DCMAKE_INSTALL_PREFIX="${SYSROOT}" \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DWEBP_BUILD_CWEBP=OFF \
+            -DWEBP_BUILD_DWEBP=OFF \
+            -DWEBP_BUILD_GIF2WEBP=OFF \
+            -DWEBP_BUILD_IMG2WEBP=OFF \
+            -DWEBP_BUILD_VWEBP=OFF \
+            -DWEBP_BUILD_WEBPINFO=OFF \
+            -DWEBP_BUILD_WEBPMUX=OFF \
+            -DWEBP_BUILD_EXTRAS=OFF \
+            -DWEBP_BUILD_ANIM_UTILS=OFF
+          cmake --build . --parallel
+          cmake --install .
+
+      - name: Build (Linux / macOS arm64)
+        if: (matrix.goos == 'linux') || (matrix.goos == 'darwin' && matrix.goarch == 'arm64')
+        env:
+          CGO_ENABLED: "1"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          if [ "${{ matrix.goos }}" = "linux" ] && [ "${{ matrix.goarch }}" = "arm64" ]; then
+            export CC=aarch64-linux-gnu-gcc
+            export CGO_CFLAGS="-I/usr/include"
+            export CGO_LDFLAGS="-L/usr/lib/aarch64-linux-gnu -lwebp"
+          fi
+
+          go build -ldflags="-s -w" -o "${{ matrix.binary }}" ./cmd/jcompressor
+
+      - name: Build (macOS amd64 cross)
+        if: matrix.goos == 'darwin' && matrix.goarch == 'amd64'
+        env:
+          CGO_ENABLED: "1"
+          GOOS: darwin
+          GOARCH: amd64
+          CC: "clang -arch x86_64"
+        run: |
+          export CGO_CFLAGS="-I${HOME}/webp-x86_64/include"
+          export CGO_LDFLAGS="-L${HOME}/webp-x86_64/lib -lwebp -lsharpyuv"
+          go build -ldflags="-s -w" -o "${{ matrix.binary }}" ./cmd/jcompressor
+
+      - name: Build (Windows amd64)
+        if: matrix.goos == 'windows' && matrix.goarch == 'amd64'
+        shell: msys2 {0}
+        run: |
+          export GOOS=windows
+          export GOARCH=amd64
+          export CGO_ENABLED=1
+          go build -ldflags="-s -w" -o "${{ matrix.binary }}" ./cmd/jcompressor
+
+      - name: Build (Windows arm64)
+        if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
+        env:
+          CGO_ENABLED: "1"
+          GOOS: windows
+          GOARCH: arm64
+          CC: aarch64-w64-mingw32-gcc
+        run: |
+          export CGO_CFLAGS="-I${WIN_ARM64_SYSROOT}/include"
+          export CGO_LDFLAGS="-L${WIN_ARM64_SYSROOT}/lib -lwebp -lsharpyuv"
+          go build -ldflags="-s -w" -o "${{ matrix.binary }}" ./cmd/jcompressor
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary }}
+          path: ${{ matrix.binary }}
+          retention-days: 1
