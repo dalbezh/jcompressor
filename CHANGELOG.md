@@ -1,7 +1,7 @@
 # Version 0.3.0
 
-- **[change]** Иправлен Action pipeline для Release;
-- **[change]** Теперь приложение всегда собирается с поддержкой webp;
+- **[change]** Теперь приложение всегда собирается с поддержкой web;
+- **[change]** Иправлен Action pipeline на workflow_call;
 - **[format]** Доработан README.
 
 # Version 0.2.1
