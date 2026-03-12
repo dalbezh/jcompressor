@@ -197,7 +197,9 @@ jobs:
           GOOS: darwin
           GOARCH: amd64
           CC: "clang -arch x86_64"
+          PKG_CONFIG_PATH: "${{ env.HOME }}/webp-x86_64/lib/pkgconfig"
         run: |
+          export PKG_CONFIG_PATH="${HOME}/webp-x86_64/lib/pkgconfig"
           export CGO_CFLAGS="-I${HOME}/webp-x86_64/include"
           export CGO_LDFLAGS="-L${HOME}/webp-x86_64/lib -lwebp -lsharpyuv"
           go build -ldflags="-s -w" -o "${{ matrix.binary }}" ./cmd/jcompressor
